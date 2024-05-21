@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: topic-copier
+  labels:
+    app: topic-copier
+spec:
+  selector:
+    matchLabels:
+      name: topic-copier
+  replicas: 2
+  template:
+    metadata:
+      labels:
+        name: topic-copier
+    spec:
+      containers:
+        - name: topic-copier
+          image: quay.io//topic-copier:latest
+          imagePullPolicy: Always
+          ports:
+          - containerPort: 8080
+            protocol: TCP
+            name: http
+          resources:
+            requests:
+              memory: "2Gi"
+              cpu: "1000m"
+            limits:
+              memory: "4Gi"
+              cpu: "4000m"
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 3
+            periodSeconds: 10
+          readinessProbe:
+              httpGet:
+                path: /health
+                port: 8080
+                scheme: HTTP
+              timeoutSeconds: 1
+              periodSeconds: 10
+              successThreshold: 1
+              failureThreshold: 3
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          envFrom:
+          - configMapRef:
+              name: topic-copier-configmap
+          - secretRef:
+              name: topic-copier-secrets

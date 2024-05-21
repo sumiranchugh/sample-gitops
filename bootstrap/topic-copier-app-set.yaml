@@ -1,0 +1,35 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+    name: topic-copier
+    namespace: openshift-gitops
+spec:
+    goTemplate: true
+    goTemplateOptions: ["missingkey=error"]
+    generators:
+        - git:
+            repoURL: https://github.com/sumiranchugh/sample-gitops.git
+            revision: main
+            directories:
+                - path: components/apps/**
+                  recursive: true
+    template:
+        metadata:
+            name: '{{index .path.segments 0}}'
+        spec:
+            project: topic-copier-{index .path.segments 2}
+            source: 
+                repoURL: https://github.com/sumiranchugh/flask-tutorial.git
+                targetRevision: main
+                path: '{{.path.path}}'
+            destination:
+                server: https://kubernetes.default.svc
+                namespace: topic-copier-{index .path.segments 2}
+            syncPolicy:
+                automated:
+                    prune: true
+                syncOptions:
+                    - CreateNamespace=true
+                managedNamespaceMetadata:
+                    labels:
+                        argocd.argoproj.io/managed-by: openshift-gitops  

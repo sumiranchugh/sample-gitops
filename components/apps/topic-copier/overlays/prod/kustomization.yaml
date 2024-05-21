@@ -1,0 +1,13 @@
+bases:
+- ../../base
+
+namespace: topic-copier-prod
+
+patches:
+- target:
+    kind: Deployment
+    name: topic-copier
+  patch: |-
+    - op: replace
+      path: /spec/template/spec/containers/0/image
+      value: image-registry.openshift-image-registry.svc:5000/topic-copier-dev/topic-copier:latest
