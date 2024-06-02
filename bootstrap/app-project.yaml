@@ -2,13 +2,128 @@ apiVersion: argoproj.io/v1alpha1
 kind: AppProject
 metadata:
   name: topic-copier-dev
-  namespace: topic-copier-dev
 spec:
+  sourceNamespaces:
+    - topic-copier-dev
   clusterResourceWhitelist:
     - group: '*'
       kind: '*'
   destinations:
-    - namespace: '*'
-      server: '*'
+    - name: in-cluster
+      namespace: topic-copier-dev
+      server: 'https://kubernetes.default.svc'
   sourceRepos:
     - '*'
+  roles:
+    - description: Group to developers to deploy on DEV environment
+      groups:
+        - topic-copier-dev
+      name: developers
+      policies:
+        - >-
+          p, proj:topic-copier-dev:developers, applications, get,
+          topic-copier-dev/*, allow
+        - >-
+          p, proj:topic-copier-dev:developers, applications, create,
+          topic-copier-dev/*, allow
+        - >-
+          p, proj:topic-copier-dev:developers, applications, update,
+          topic-copier-dev/*, allow
+        - >-
+          p, proj:topic-copier-dev:developers, applications, delete,
+          topic-copier-dev/*, allow
+        - >-
+          p, proj:topic-copier-dev:developers, applications, sync,
+          topic-copier-dev/*, allow
+        - >-
+          p, proj:topic-copier-dev:developers, applications, override,
+          topic-copier-dev/*, allow
+    - description: Group for production deployment
+      groups:
+        - topic-copier-ops
+      name: production-rollout
+      policies:
+        - >-
+          p, proj:topic-copier-dev:production-rollout, applications, get,
+          topic-copier-dev/*, allow
+        - >-
+          p, proj:topic-copier-dev:production-rollout, applications, create,
+          topic-copier-dev/*, deny
+        - >-
+          p, proj:topic-copier-dev:production-rollout, applications, update,
+          topic-copier-dev/*, deny
+        - >-
+          p, proj:topic-copier-dev:production-rollout, applications, delete,
+          topic-copier-dev/*, deny
+        - >-
+          p, proj:topic-copier-dev:production-rollout, applications, sync,
+          topic-copier-dev/*, deny
+        - >-
+          p, proj:topic-copier-dev:production-rollout, applications, override,
+          topic-copier-dev/*, deny
+---
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: topic-copier-prod
+spec:
+  sourceNamespaces:
+    - topic-copier-prod
+    - topic-copier-dev
+  clusterResourceWhitelist:
+    - group: '*'
+      kind: '*'
+  destinations:
+    - name: in-cluster
+      namespace: topic-copier-prod
+      server: 'https://kubernetes.default.svc'
+  sourceRepos:
+    - '*'
+  roles:
+    - description: Group to operators to deploy on PROD environment
+      groups:
+        - topic-copier-ops
+      name: operators
+      policies:
+        - >-
+          p, proj:topic-copier-prod:operators, applications, get,
+          topic-copier-prod/*, allow
+        - >-
+          p, proj:topic-copier-prod:operators, applications, create,
+          topic-copier-prod/*, allow
+        - >-
+          p, proj:topic-copier-prod:operators, applications, update,
+          topic-copier-prod/*, allow
+        - >-
+          p, proj:topic-copier-prod:operators, applications, delete,
+          topic-copier-prod/*, allow
+        - >-
+          p, proj:topic-copier-prod:operators, applications, sync,
+          topic-copier-prod/*, allow
+        - >-
+          p, proj:topic-copier-prod:operators, applications, override,
+          topic-copier-prod/*, allow
+    - description: Group for developers to view production deployments
+      groups:
+        - topic-copier-dev
+      name: developers
+      policies:
+        - >-
+          p, proj:topic-copier-prod:developers, applications, get,
+          topic-copier-prod/*, allow
+        - >-
+          p, proj:topic-copier-prod:developers, applications, create,
+          topic-copier-prod/*, deny
+        - >-
+          p, proj:topic-copier-prod:developers, applications, update,
+          topic-copier-prod/*, deny
+        - >-
+          p, proj:topic-copier-prod:developers, applications, delete,
+          topic-copier-prod/*, deny
+        - >-
+          p, proj:topic-copier-prod:developers, applications, sync,
+          topic-copier-prod/*, deny
+        - >-
+          p, proj:topic-copier-prod:developers, applications, override,
+          topic-copier-prod/*, deny          
+      

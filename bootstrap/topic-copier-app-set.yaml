@@ -2,7 +2,7 @@ apiVersion: argoproj.io/v1alpha1
 kind: ApplicationSet
 metadata:
     name: topic-copier
-    namespace: openshift-gitops
+    # namespace: topic-copier-dev
 spec:
     goTemplate: true
     goTemplateOptions: ["missingkey=error"]
@@ -11,25 +11,26 @@ spec:
             repoURL: https://github.com/sumiranchugh/sample-gitops.git
             revision: main
             directories:
-                - path: components/apps/**
+                - path: components/apps/topic-copier/overlays/**
                   recursive: true
     template:
         metadata:
-            name: '{{index .path.segments 0}}'
+            name: '{{ index .path.segments 2 }}-{{ index .path.segments 4 }}'
+            namespace: '{{ index .path.segments 2 }}-{{ index .path.segments 4 }}'
         spec:
-            project: topic-copier-{index .path.segments 2}
+            project: '{{ index .path.segments 2 }}-{{ index .path.segments 4 }}'
             source: 
-                repoURL: https://github.com/sumiranchugh/flask-tutorial.git
+                repoURL: https://github.com/sumiranchugh/sample-gitops.git
                 targetRevision: main
-                path: '{{.path.path}}'
+                path: '{{ .path.path }}'
             destination:
                 server: https://kubernetes.default.svc
-                namespace: topic-copier-{index .path.segments 2}
+                namespace: '{{ index .path.segments 2 }}-{{ index .path.segments 4 }}'
             syncPolicy:
                 automated:
                     prune: true
-                syncOptions:
-                    - CreateNamespace=true
-                managedNamespaceMetadata:
-                    labels:
-                        argocd.argoproj.io/managed-by: openshift-gitops  
+                # syncOptions:
+                #     - CreateNamespace=true
+                # managedNamespaceMetadata:
+                #     labels:
+                #         argocd.argoproj.io/managed-by: openshift-gitops  
