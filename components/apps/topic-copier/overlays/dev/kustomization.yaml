@@ -2,7 +2,7 @@
 namespace: topic-copier-dev
 
 resources:
-- topic-copier-sealed-secrets.yaml
+# - topic-copier-sealed-secrets.yaml
 - ../../base
 
 configMapGenerator:
